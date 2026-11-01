@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#18382f"><meta name="description" content="ASOBEATの30秒レジ打ちタイムアタック『お釣りいくら？』。スキャンして、計算して、お釣りを渡そう！">
+<title>お釣りいくら？ | ASOBEAT</title>
+<style>
+:root{--ink:#1b332c;--green:#206e58;--green2:#175541;--mint:#a2d8bd;--warm:#fff9ed;--cream:#f2ead9;--paper:#fffdf6;--orange:#f0b35f;--muted:#6b8176;--line:#c4cdbd;--red:#de6655;--shadow:0 5px 0 #122f28;--safeB:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%;margin:0;overscroll-behavior:none}body{background:#16372e;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden}button{font:inherit;cursor:pointer}button:focus-visible,[tabindex]:focus-visible{outline:3px solid #efb853;outline-offset:2px}button:disabled{cursor:default;opacity:.47} .pixel{image-rendering:pixelated;image-rendering:crisp-edges}
+.app{width:min(100%,490px);height:min(100dvh,980px);height:min(100svh,980px);position:relative;overflow:hidden;isolation:isolate;background:var(--cream);box-shadow:0 0 0 1px #102820,0 24px 100px #081b17a8}
+.screen{position:absolute;inset:0;display:none}.screen.active{display:flex;flex-direction:column}
+/* TITLE */
+#titleScreen{background:#f4eddc;overflow:hidden} .title-top{height:48%;position:relative;background:#204b3f;overflow:hidden;min-height:230px}
+.title-scene{position:absolute;width:100%;height:100%;left:0;top:0;image-rendering:pixelated}
+.title-veil{position:absolute;inset:0;background:linear-gradient(0deg,#204b3f 1%,#204b3fe8 29%,#204b3f2e 100%)}
+.title-brand{position:absolute;top:17px;left:19px;color:#d9e2cd;font-size:10px;letter-spacing:3.2px;font-weight:900}
+.title-copy{position:absolute;bottom:27px;left:25px;right:20px;color:#fff7e8}.title-copy .overline{font-size:10px;letter-spacing:2px;color:#f7cd8b;font-weight:900}.title-copy h1{margin:8px 0 4px;font-size:clamp(34px,8.5vw,49px);line-height:1.16;letter-spacing:-2px;text-shadow:3px 4px 0 #103328}.title-copy p{margin:9px 0 0;color:#d6e6d7;font-size:12px;letter-spacing:.7px}
+.title-bottom{flex:1;padding:25px 24px calc(21px + var(--safeB));display:flex;flex-direction:column;justify-content:center;gap:15px;min-height:0}
+.section-cap{font-size:10px;font-weight:900;letter-spacing:2px;color:#52695e}.difficulty-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.diff{border:2px solid #d1d4c6;border-radius:10px;background:#fffcf4;padding:14px 5px 12px;text-align:center;color:#66776b;transition:background .15s,border-color .15s,transform .15s}
+.diff .d-label{display:block;font-weight:900;font-size:15px}.diff .d-sub{font-family:ui-monospace,SFMono-Regular,monospace;display:block;margin-top:7px;font-size:10px;letter-spacing:.4px}.diff.sel{background:#dfefe2;border-color:#2d735b;color:#19523f;box-shadow:0 3px 0 #2c755b26;transform:translateY(-2px)}
+.primary{background:#1e6f52;color:white;border:0;border-radius:10px;font-weight:900;letter-spacing:.4px;box-shadow:0 4px 0 #0e4433;min-height:54px;font-size:17px}.primary:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #0e4433}.title-foot{font-size:11px;color:#698175;text-align:center}.sound-toggle{background:transparent;border:1px solid #9fbba7;border-radius:7px;padding:4px 7px;color:inherit;font-size:12px;font-weight:900}
+/* PLAY */
+#gameScreen{background:var(--cream)}.hud{height:54px;flex-shrink:0;background:#173f34;color:#fbf6e8;display:flex;align-items:center;justify-content:space-between;padding:5px 13px 5px 16px;position:relative;z-index:1}
+.hud-brand{font-size:14px;font-weight:950;line-height:1.08;letter-spacing:-.7px}.hud-sub{display:block;font-size:9px;font-weight:800;letter-spacing:1.3px;color:#a4c4af;margin-top:4px}
+.hud-clock{display:flex;align-items:center;gap:8px}.hud-clock .time{text-align:right;font-size:26px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1.3px;line-height:1}.hud-clock .time.warn{color:#fac175;animation:pulse .7s infinite alternate}.hud-clock .sec{font-size:10px;color:#b2cfb8;letter-spacing:.6px;line-height:1.1;text-align:right}.hud .sound-toggle{color:#d2e6d9;border-color:#638576}
+@keyframes pulse{to{opacity:.58}}
+.scene{height:clamp(123px,23.5svh,210px);flex-shrink:0;overflow:hidden;background:#a2c5ac;position:relative;border-bottom:5px solid #315d49}.scene canvas{width:100%;height:100%;object-fit:fill;display:block}
+.speech{position:absolute;right:10px;top:11px;max-width:52%;padding:9px 11px;background:#fffdf5;border:2px solid #30483c;box-shadow:3px 4px 0 #22443542;border-radius:8px;font-weight:850;font-size:12px;color:#244234;line-height:1.4;min-height:36px}.speech:after{content:"";position:absolute;bottom:-9px;left:20px;width:12px;height:12px;border-right:2px solid #30483c;border-bottom:2px solid #30483c;background:#fffdf5;transform:rotate(45deg)}
+.scene-meta{position:absolute;bottom:7px;left:12px;display:flex;gap:5px}.phase-pill{background:#173b32e8;color:#eef9eb;font-weight:850;font-size:10px;padding:4px 7px;border-radius:5px;letter-spacing:.4px}.customer-tag{background:#f8e4af;color:#614c30}
+.register{flex:1;min-height:0;display:grid;grid-template-rows:61px minmax(85px,1.1fr) minmax(105px,1.18fr) 109px 53px;gap:8px;padding:10px 10px calc(10px + var(--safeB));background:var(--cream)}
+/* POS & scanner */
+.pos-row{display:grid;grid-template-columns:minmax(0,1fr) 97px;gap:8px;min-height:0}
+.pos{background:#193e36;border:3px solid #e0cfa9;border-radius:8px;padding:4px 10px 5px;color:#c6f4d4;display:flex;align-items:center;justify-content:space-between;gap:5px;box-shadow:0 3px 0 #b8ad91;overflow:hidden}
+.pos-left{display:flex;flex-direction:column;gap:1px;min-width:0}.pos-label{font-size:9px;font-weight:850;color:#8bb59a;letter-spacing:1px}.pos-price{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:28px;font-weight:900;white-space:nowrap;letter-spacing:-1.3px;line-height:1.12}.pos-price.small{font-size:22px}.pos-side{font-size:10px;font-weight:850;text-align:right;line-height:1.5;color:#abd7b9;min-width:64px}.pos-side b{display:block;font-size:11px;color:#f4e5bb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:75px}
+.scanner-dock{border:2px solid #c3b99e;border-radius:8px;background:#f9f5e7;position:relative;display:flex;justify-content:center;align-items:center;gap:2px;touch-action:none;cursor:grab;overflow:hidden;user-select:none}.scanner-dock.available{border-color:#d6a24e;background:#fff4d9}.scanner-dock:active{cursor:grabbing}.scanner-dock canvas{width:48px;height:48px;pointer-events:none}.scanner-dock span{font-size:10px;line-height:1.25;font-weight:900;color:#52675c;pointer-events:none}
+/* PRODUCTS */
+.product-area{border:2px solid #c7bdaa;border-radius:10px;background:#f7f0e1;display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative}
+.area-head{height:20px;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;background:#e9ddc8;padding:0 9px;color:#6e6c58;font-size:10px;font-weight:900;letter-spacing:.6px}.area-head span:last-child{font-size:9px;color:#777d69}
+.products{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:5px 6px 6px;align-items:stretch}.item-slot{position:relative;min-width:0;min-height:0;border-radius:6px;border:1px dashed #d7c9b4;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;background:#fffaf0}.item-slot.empty{background:transparent;border:1px dashed #ddcfb5}.item-slot img,.item-slot canvas{width:clamp(31px,9vw,49px);height:clamp(31px,9vw,49px);object-fit:contain;flex-shrink:1;min-height:0;image-rendering:pixelated}.item-slot .item-name{font-size:10px;font-weight:900;max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;line-height:1.15}.item-slot .item-cost{font-size:10px;color:#a26e3d;font-weight:950;line-height:1.15}.item-slot.scanned{background:#e7f5e9;border:2px solid #67af80}.item-slot .check{position:absolute;right:3px;top:2px;color:#1b8861;font-size:13px;font-weight:950}.item-slot.just-scanned{animation:scanflash .35s ease-out}
+@keyframes scanflash{0%{background:#b4f4c5;transform:scale(1.04)}100%{transform:scale(1)}}
+/* TRAYS */
+.tray-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0}
+.tray{display:flex;min-width:0;min-height:0;flex-direction:column;border:2px solid #bdac8e;border-radius:10px;background:#e6ded0;box-shadow:inset 0 3px 8px #84776217;overflow:hidden;position:relative;transition:border-color .12s,background .12s}
+.tray.drop-target{background:#d9f3df;border-color:#49a37a;box-shadow:inset 0 0 0 2px #80cf9e}.tray-label{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:5px 8px 4px;border-bottom:1px solid #cfbea1;font-size:11px;font-weight:950;color:#506053;white-space:nowrap}.tray.right .tray-label{color:#256b51}.tray-label small{font-size:9px;color:#827965;letter-spacing:.3px}.tray-coins{flex:1;min-height:0;display:flex;align-content:flex-start;align-items:flex-start;justify-content:center;gap:3px;flex-wrap:wrap;padding:5px 4px;overflow:hidden}.empty-label{align-self:center;font-size:10px;font-weight:700;text-align:center;color:#a39783;line-height:1.55}.money-stack{border:0;cursor:grab;padding:1px 2px;background:transparent;display:flex;flex-direction:column;align-items:center;gap:1px;touch-action:none;min-width:37px}.money-stack .count{font-size:10px;line-height:1;color:#385649;font-weight:950}.tray-total{flex-shrink:0;border-top:1px solid #d3c4a7;padding:3px 8px;font-weight:900;font-variant-numeric:tabular-nums;text-align:right;background:#d8ead7;color:#24634b;font-size:12px}.tray.left .tray-total{background:transparent;color:#806d53;font-size:9px}
+/* money faces */
+.money-face{display:flex;justify-content:center;align-items:center;position:relative;flex-shrink:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:950;box-sizing:border-box;user-select:none;letter-spacing:-1px}
+.money-face.coin{width:38px;height:38px;border-radius:50%;border:3px solid #a0a29a;background:#dfe1de;color:#565a59;box-shadow:inset 0 0 0 2px #f5f5ed,0 2px 0 #9da49b;font-size:15px}
+.money-face.coin.v5,.money-face.coin.v50{background:#e6e8dc;border-color:#a0a7a1}.money-face.coin.v10{background:#c68d63;border-color:#a46b4f;color:#fff3e3;box-shadow:inset 0 0 0 2px #e9b28a,0 2px 0 #9a6044}.money-face.coin.v100{background:#d4e0da;border-color:#8caaa2}.money-face.coin.v500{background:#d6d0b6;border-color:#a69a76;color:#6e603e;box-shadow:inset 0 0 0 2px #eee8cc,0 2px 0 #8c8064}.money-face.coin.v5:before,.money-face.coin.v50:before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#b8bcad;left:4px;top:12px;opacity:.75}
+.money-face.note{width:55px;height:35px;border-radius:3px;background:#bedbd0;border:2px solid #61897d;color:#245e52;font-size:13px;box-shadow:inset 0 0 0 2px #dcece3,0 2px 0 #658d7e;letter-spacing:-1px}.money-face.note.v5000{background:#d5bfd3;border-color:#927b99;color:#68476c;box-shadow:inset 0 0 0 2px #eadcec,0 2px 0 #8d7792}.money-face.note.v10000{background:#cfc8ae;border-color:#9b9275;color:#726541;box-shadow:inset 0 0 0 2px #e7e1ce,0 2px 0 #9b9075}.money-face.note:before,.money-face.note:after{content:"";position:absolute;top:4px;bottom:4px;border-left:1px solid currentColor;opacity:.24}.money-face.note:before{left:6px}.money-face.note:after{right:6px}
+.tray-coins .money-face.coin{width:29px;height:29px;border-width:2px;font-size:11px}.tray-coins .money-face.note{width:44px;height:29px;font-size:10px}.tray-coins .money-stack{min-width:30px}
+/* cash drawer */
+.cash-drawer{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:4px;padding:6px;background:#d6dbcd;border:2px solid #aeb8a7;border-radius:9px;min-height:0;touch-action:none}.denom{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #b8c7b4;background:#f5f8f0;border-radius:6px;padding:2px;touch-action:none;user-select:none;cursor:grab}.denom:active{background:#e2f5e6;cursor:grabbing}.denom .money-face.coin{width:30px;height:30px;font-size:12px;border-width:2px}.denom .money-face.note{width:49px;height:29px;font-size:11px}.denom small{font-size:9px;font-weight:950;color:#4b5d51;line-height:1.1;margin-top:1px}.cash-drawer.drop-target{outline:3px solid #3fae73;outline-offset:-3px}
+/* FOOT */
+.action-row{display:grid;grid-template-columns:1fr 1.7fr;gap:8px;min-height:0}.hint{font-size:10px;color:#526a5d;line-height:1.38;display:flex;align-items:center;font-weight:800;padding:0 2px}.pay-btn{background:#eeaa52;border:0;border-radius:8px;box-shadow:0 3px 0 #af742f;color:#3f2f1d;font-size:16px;font-weight:950;letter-spacing:.4px;min-width:0}.pay-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #af742f}.pay-btn:disabled{background:#cec7b7;color:#7b7c73;box-shadow:0 2px 0 #aaa69c;opacity:1}
+/* Drag */
+#dragLayer{position:fixed;pointer-events:none;inset:0;z-index:1000}.drag-ghost{position:fixed;pointer-events:none;filter:drop-shadow(1px 5px 2px #14261c70)}.drag-ghost.scanner{width:65px;height:65px;transform:rotate(-13deg)}.drag-ghost.scanner canvas{width:100%;height:100%;image-rendering:pixelated}.drag-ghost.money{transform:scale(1.16);opacity:.94}.drag-ghost.money .money-face.coin{width:47px;height:47px}.drag-ghost.money .money-face.note{width:63px;height:42px}
+/* RESULT */
+#resultScreen{background:#f2ebdb;overflow:auto;align-items:center;justify-content:safe center;padding:23px 20px calc(22px + var(--safeB))}
+.result-header{text-align:center;width:100%}.result-headline{font-size:35px;font-weight:950;letter-spacing:-2px;color:#1c483a;margin:7px 0}.result-sub{font-size:11px;font-weight:850;letter-spacing:1.9px;color:#7c826e}.receipt{width:100%;max-width:405px;background:#fffef5;box-shadow:0 8px 28px #3c463122;position:relative;padding:17px 18px 20px;margin:20px 0 18px;border-top:4px solid #1e6953}.receipt:after{content:"";position:absolute;bottom:-7px;left:0;right:0;height:8px;background:linear-gradient(135deg,#fffef5 25%,transparent 25%) 0 0 / 12px 12px,linear-gradient(225deg,#fffef5 25%,transparent 25%) 0 0 / 12px 12px}.receipt-meta{display:flex;justify-content:space-between;font-size:10px;font-weight:850;color:#849287;letter-spacing:.7px}.receipt h2{text-align:center;margin:11px 0 12px;font-size:23px;color:#294e40}.dotted{border-top:2px dashed #ccd3c3;margin:10px 0}.stat{display:flex;align-items:baseline;justify-content:space-between;margin:12px 0;font-size:13px;font-weight:800;color:#67776b;gap:5px}.stat strong{font-size:22px;color:#243e32;white-space:nowrap;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.stat.service strong{color:#277f5a}.stat.miss strong{color:#bc6752}.title-result{background:#ecf3df;padding:13px 10px;text-align:center;border-radius:7px;margin-top:15px}.title-result .small{font-size:10px;font-weight:900;color:#7b866f;letter-spacing:2px}.title-result strong{display:block;font-size:20px;letter-spacing:-.5px;margin-top:5px;color:#215b45}.record{font-size:11px;color:#558571;text-align:center;margin:8px 0 0;font-weight:800}.result-buttons{display:flex;width:100%;max-width:405px;flex-direction:column;gap:9px}.secondary-btn{border:2px solid #739986;border-radius:9px;min-height:45px;background:transparent;color:#225f4a;font-weight:900;font-size:13px}.result-buttons .primary{min-height:47px;font-size:15px}
+/* title mobile / short */
+@media(max-height:740px){.title-top{height:44%;min-height:180px}.title-bottom{padding:15px 20px calc(15px + var(--safeB));gap:10px}.title-copy{bottom:16px}.diff{padding:9px 3px}.scene{height:clamp(115px,21svh,155px)}.hud{height:46px}.hud-clock .time{font-size:23px}.register{grid-template-rows:51px minmax(67px,1fr) minmax(88px,1.05fr) 94px 46px;padding:7px 8px calc(7px + var(--safeB));gap:5px}.pos-row{grid-template-columns:minmax(0,1fr) 83px;gap:5px}.pos-price{font-size:22px}.scanner-dock canvas{width:39px;height:39px}.scanner-dock span{font-size:9px}.area-head{height:17px}.products{padding:3px 4px 4px}.item-slot canvas{width:clamp(28px,8.7vw,38px);height:clamp(28px,8.7vw,38px)}.item-slot .item-name{font-size:9px}.item-slot .item-cost{font-size:9px}.tray-label{font-size:10px;padding:3px 6px}.tray-coins{padding:3px;gap:1px}.tray-total{font-size:11px;padding:1px 6px}.cash-drawer{padding:3px;gap:3px}.denom .money-face.coin{width:27px;height:27px;font-size:11px}.denom .money-face.note{height:26px;width:42px;font-size:10px}.denom small{font-size:9px}.pay-btn{font-size:14px}.hint{font-size:9px}.result-headline{font-size:30px}.receipt{margin:12px 0;padding:13px 15px}.stat{margin:7px 0}.stat strong{font-size:19px}.title-result{padding:9px;margin-top:8px}.title-result strong{font-size:18px}.result-buttons{gap:7px}.result-buttons .primary{min-height:42px}}
+@media(max-height:590px){.scene{height:104px}.hud{height:40px}.hud-brand{font-size:12px}.hud-sub{font-size:8px}.hud-clock .time{font-size:21px}.register{grid-template-rows:46px minmax(63px,1fr) minmax(70px,1fr) 85px 42px;gap:4px;padding:5px 7px calc(5px + var(--safeB))}.pos-price{font-size:20px}.pos-side{font-size:9px}.speech{font-size:10px;padding:6px 9px;max-width:55%}.scene-meta{bottom:3px}.phase-pill{font-size:9px}.tray-coins .money-face.coin{width:24px;height:24px;font-size:10px}.tray-coins .money-face.note{width:38px;height:24px;font-size:9px}.tray-coins .money-stack{min-width:26px}.money-stack .count{font-size:9px}.cash-drawer{padding:2px}.denom .money-face.coin{width:25px;height:25px;font-size:10px}.denom .money-face.note{width:40px;height:25px;font-size:9px}.result-headline{font-size:26px}.receipt h2{font-size:20px;margin:7px 0}.receipt{margin:8px 0 10px;padding:10px 12px}.dotted{margin:6px 0}.stat{margin:6px 0}.result-buttons .primary{min-height:40px}.secondary-btn{min-height:38px}#resultScreen{padding:12px 16px calc(12px + var(--safeB))}}
+@media(max-width:355px){.scene{height:min(21svh,142px)}.pos-row{grid-template-columns:minmax(0,1fr) 78px}.pos{padding:4px 6px}.pos-side{min-width:58px}.pos-side b{max-width:62px}.tray-row{gap:5px}.tray-coins .money-face.coin{width:25px;height:25px}.tray-coins .money-face.note{width:39px;height:25px}.tray-coins .money-stack{min-width:26px}.cash-drawer{gap:2px}.denom .money-face.note{width:39px}.money-face.note{letter-spacing:-1.5px}.hint{font-size:9px}}
+@media(min-width:650px) and (max-height:660px){.app{width:min(96%,840px)}.scene{height:115px}.register{grid-template-rows:47px minmax(67px,1fr) minmax(82px,1fr) 85px 44px}.title-top{min-height:170px}}
+@media(orientation:landscape) and (max-height:560px) and (min-width:640px){
+.app{width:min(100%,940px)}
+#gameScreen.active{display:grid;grid-template-columns:35% 65%;grid-template-rows:40px minmax(0,1fr)}
+.hud{grid-column:1/-1;grid-row:1;height:40px}
+.scene{grid-column:1;grid-row:2;width:100%;height:100%;min-height:0;border-bottom:0;border-right:4px solid #315d49;display:flex;align-items:center;justify-content:center}
+.scene canvas{height:auto;width:100%;aspect-ratio:390/175;object-fit:contain}
+.speech{top:7%;right:4%;max-width:59%;font-size:10px;padding:7px}
+.register{grid-column:2;grid-row:2;height:100%;grid-template-rows:44px minmax(50px,1fr) minmax(69px,1.1fr) 73px 38px;gap:4px;padding:5px 7px}
+.pos-row{grid-template-columns:minmax(0,1fr) 87px}
+.product-area .area-head{height:17px}.item-slot canvas{width:33px;height:33px}.cash-drawer{gap:3px;padding:3px}
+.denom .money-face.coin{width:22px;height:22px}.denom .money-face.note{width:40px;height:21px;font-size:9px}.denom{padding:0}.denom small{font-size:8px;line-height:1}
+.tray-coins .money-face.coin{width:25px;height:25px}.tray-coins .money-face.note{width:40px;height:25px}
+.tray-label{padding:2px 5px}.tray-total{padding:1px 5px}.pay-btn{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style></head>
+<body><main class="app" id="app">
+<section class="screen active" id="titleScreen" aria-label="タイトル画面">
+ <div class="title-top"><canvas class="title-scene pixel" id="titleCanvas" width="390" height="250" aria-hidden="true"></canvas><div class="title-veil"></div><div class="title-brand">ASOBEAT / MINI GAME 04</div><div class="title-copy"><div class="overline">30 SECONDS / CONVENIENCE STORE</div><h1>お釣り<br>いくら？</h1><p>スキャンして、数えて、さばききれ。</p></div></div>
+ <div class="title-bottom"><div class="section-cap">01 — DIFFICULTY / 難易度</div><div class="difficulty-picker" id="difficultyPicker"><button class="diff" type="button" data-diff="easy"><span class="d-label">やさしい</span><span class="d-sub">¥100 単位</span></button><button class="diff" type="button" data-diff="normal"><span class="d-label">ふつう</span><span class="d-sub">¥10 単位</span></button><button class="diff" type="button" data-diff="hard"><span class="d-label">むずかしい</span><span class="d-sub">¥1 単位</span></button></div><button class="primary" id="startBtn" type="button">レジに立つ　→</button><div class="title-foot">30秒で、あなたは何人さばける？</div></div>
+</section>
+<section class="screen" id="gameScreen" aria-label="レジ打ちゲーム">
+ <header class="hud"><div><span class="hud-brand">お釣りいくら？</span><span class="hud-sub" id="hudDiff">ASOBEAT / ふつう</span></div><div class="hud-clock"><div><div class="sec" id="clockLabel">CHECKOUT TIME</div><div class="time" id="timer">30.00</div></div><button id="soundBtn" class="sound-toggle" title="音声ON・OFF" aria-label="音声ON・OFF">♪</button></div></header>
+ <div class="scene"><canvas id="sceneCanvas" class="pixel" width="390" height="175" aria-label="レジに並ぶお客さん"></canvas><div class="speech" id="speech" aria-live="polite">いらっしゃいませ！</div><div class="scene-meta"><span class="phase-pill" id="phaseLabel">準備中</span><span class="phase-pill customer-tag" id="customerLabel">お客さま 01</span></div></div>
+ <div class="register">
+  <div class="pos-row"><div class="pos"><div class="pos-left"><span class="pos-label">TOTAL / 合計金額</span><span class="pos-price" id="total">¥0</span></div><div class="pos-side"><span id="scanCount">SCAN 0 / 0</span><b id="lastScan">読み取り待ち</b></div></div><div class="scanner-dock" id="scannerDock" role="button" tabindex="0" aria-label="スキャナーをドラッグして商品をスキャン"><canvas width="56" height="56" class="pixel" id="scannerIcon"></canvas><span>長押し<br>スキャン</span></div></div>
+  <div class="product-area"><div class="area-head"><span>SCAN ITEMS / 商品</span><span id="productsHint">商品を待っています</span></div><div class="products" id="products"></div></div>
+  <div class="tray-row"><div class="tray left" id="leftTray"><div class="tray-label">お預かり <small>お客さま</small></div><div class="tray-coins" id="paymentMoney"><span class="empty-label">お支払い待ち</span></div><div class="tray-total">左トレー / 動かせません</div></div><div class="tray right" id="rightTray"><div class="tray-label">お釣り <small>あなた</small></div><div class="tray-coins" id="returnMoney"><span class="empty-label">ここへお金を置く</span></div><div class="tray-total" id="returnTotal">¥0</div></div></div>
+  <div class="cash-drawer" id="cashDrawer" aria-label="お釣り用の硬貨と紙幣"></div>
+  <div class="action-row"><div class="hint" id="hint">まずは商品をスキャン</div><button class="pay-btn" id="payBtn" type="button" disabled>お釣りです！ →</button></div>
+ </div>
+</section>
+<section class="screen" id="resultScreen" aria-label="リザルト画面"><div class="result-header"><div class="result-sub">YOUR SHIFT IS OVER</div><h1 class="result-headline">お疲れ様です。</h1><div class="result-sub" id="resultDiff">難易度：ふつう</div></div><div class="receipt"><div class="receipt-meta"><span>ASOBEAT / REGISTER</span><span id="receiptNo">#001</span></div><h2>30秒のレジ勤務</h2><div class="dotted"></div><div class="stat"><span>対応したお客さん</span><strong id="resultCustomers">0 人</strong></div><div class="stat service"><span>お客さんにサービスした金額</span><strong id="resultService">¥0</strong></div><div class="stat miss"><span>お客さんから横領した金額</span><strong id="resultShort">¥0</strong></div><div class="dotted"></div><div class="title-result"><div class="small">YOUR TITLE / 称号</div><strong id="resultTitle">研修初日で終了</strong></div><div class="record" id="recordMsg"></div></div><div class="result-buttons"><button class="primary" id="retryBtn">もう一度遊ぶ　↻</button><button class="secondary-btn" id="backBtn">難易度を選び直す</button><button class="secondary-btn" id="shareBtn">𝕏 で結果を共有</button></div></section>
+<div id="dragLayer" aria-hidden="true"></div>
+</main>
+<script>
+'use strict';
+// Game settings are intentionally centralized for balancing and future expansion.
+const CFG={checkoutSeconds:30,arrivalMs:2000,placementMs:2000,paymentMs:3000,reactionMs:2000,exitMs:2000,prices:{easy:100,normal:10,hard:1},storeKey:'asobeat_ochuri_v1'};
+const PRODUCTS=[
+{id:'onigiri',name:'おにぎり',min:110,max:321,repeat:true},
+{id:'bento',name:'弁当',min:400,max:700},
+{id:'sandwich',name:'サンドイッチ',min:200,max:400},
+{id:'pasta',name:'パスタ',min:400,max:600},
+{id:'ramen',name:'ラーメン',min:500,max:800},
+{id:'chocolate',name:'チョコ',min:150,max:350,repeat:true},
+{id:'cookies',name:'クッキー',min:80,max:250,repeat:true},
+{id:'pudding',name:'プリン',min:200,max:400},
+{id:'pancake',name:'パンケーキ',min:300,max:500},
+{id:'juice',name:'ジュース',min:150,max:250},
+{id:'coffee',name:'コーヒー',min:150,max:350}];
+const DENOMS=[1,5,10,50,100,500,1000,5000,10000];
+const DIFF_NAMES={easy:'やさしい',normal:'ふつう',hard:'むずかしい'};
+const CORRECT_LINES=['ありがとう','ありがとうね','Thank you'];
+const WRONG_LINES=['ん？まあありがとう','あれ、見間違いか','Huh?'];
+const COLORS={wall:'#cadbc9',wall2:'#d9e4d5',shelf:'#7e9c85',shelfDark:'#4d6958',counter:'#8d735a',floor:'#acbdae',ink:'#253c32'};
+const $=(q)=>document.querySelector(q);
+const $$=(q)=>Array.from(document.querySelectorAll(q));
+const fmt=(v)=>'¥'+Math.round(v).toLocaleString('ja-JP');
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=(a)=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+function loadStore(){try{const data=JSON.parse(localStorage.getItem(CFG.storeKey)||'{}');return {difficulty:data.difficulty||'normal',sound:data.sound!==false,seenTutorial:!!data.seenTutorial,records:data.records||{}}}catch(e){return {difficulty:'normal',sound:true,seenTutorial:false,records:{}}}}
+let saved=loadStore();function saveStore(){try{localStorage.setItem(CFG.storeKey,JSON.stringify(saved))}catch(e){}}
+let state={active:false,phase:'title',difficulty:saved.difficulty,time:30,phaseStart:0,lastFrame:0,prices:{},current:null,served:0,service:0,short:0,customerNo:0,customerVariant:0,scanned:[],shownItems:0,shownCash:0,scanTotal:0,lastScan:null,given:{},expression:'neutral',speech:'',hint:'',drag:null,finalTitle:'',lastRound:null};
+// Audio: pure Web Audio synthesis, no fetched audio and no copyrighted sound samples.
+let audio=null,ambSource=null,ambGain=null;
+function audioReady(){if(!saved.sound)return null;try{if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();const noise=audio.createBuffer(1,Math.floor(audio.sampleRate*2),audio.sampleRate);let samples=noise.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*.07;const source=audio.createBufferSource();source.buffer=noise;source.loop=true;const low=audio.createBiquadFilter();low.type='lowpass';low.frequency.value=360;ambGain=audio.createGain();ambGain.gain.value=0;source.connect(low);low.connect(ambGain);ambGain.connect(audio.destination);source.start();ambSource=source;}if(audio.state==='suspended')audio.resume();return audio}catch(e){return null}}
+function ambient(on){if(!audio||!ambGain)return;ambGain.gain.setTargetAtTime(saved.sound&&on?.18:0,audio.currentTime,.14)}
+function tone(name){const ctx=audioReady();if(!ctx)return;let [freq,duration,wave,volume,slide]=({scan:[940,.075,'sine',.11,120],coin:[610,.09,'triangle',.11,-180],note:[300,.08,'triangle',.06,140],place:[240,.055,'square',.038,-90],start:[490,.16,'sine',.085,220],ok:[690,.13,'sine',.10,230],wrong:[210,.18,'triangle',.12,-100],tick:[680,.08,'square',.055,0],end:[440,.22,'triangle',.10,-220],walk:[160,.07,'triangle',.045,-45],tap:[390,.05,'sine',.04,30]})[name]||[450,.08,'sine',.08,0];try{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=wave;osc.frequency.setValueAtTime(freq,ctx.currentTime);if(slide)osc.frequency.exponentialRampToValueAtTime(Math.max(60,freq+slide),ctx.currentTime+duration);gain.gain.setValueAtTime(Math.max(.0001,volume),ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+duration+.005)}catch(e){}}
+function moneyFace(value){const note=value>=1000,cls=note?'note':'coin';return `<span class="money-face ${cls} v${value}">${note?value.toLocaleString('ja-JP'):value}</span>`}
+function createDrawer(){const drawer=$('#cashDrawer');drawer.innerHTML=DENOMS.map(d=>`<button class="denom" type="button" data-value="${d}" aria-label="${d}円をお釣りトレーに入れる">${moneyFace(d)}<small>${d.toLocaleString('ja-JP')}円</small></button>`).join('')}
+function drawScanner(canvas){let c=canvas.getContext('2d');c.clearRect(0,0,56,56);c.imageSmoothingEnabled=false;const r=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h)};r(6,7,34,6,'#1c4035');r(2,13,42,12,'#2c5649');r(4,12,36,3,'#6f9386');r(4,22,38,5,'#16372e');r(11,27,14,22,'#244c3f');r(14,30,8,15,'#54796a');r(10,48,17,5,'#19392f');r(0,15,6,7,'#f0be67');r(2,17,4,3,'#fdf7bf');r(45,14,5,8,'#b4d7c6');r(50,17,4,2,'#ed7961')}
+// Hand-authored canvas product art. Every product uses the same 2px crisp pixel grid.
+function drawProduct(canvas,type){const c=canvas.getContext('2d');c.clearRect(0,0,56,56);c.imageSmoothingEnabled=false;
+ const p=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ const outline='#35483b',white='#fff5dd',gold='#e8b36d',red='#cd6654',green='#6b9e77',pink='#e9a29e',dk='#604f42';
+ const frame=(x,y,w,h,color)=>{p(x,y,w,h,outline);p(x+3,y+3,w-6,h-6,color)};
+ switch(type){
+ case'onigiri':p(7,43,42,7,'#c7c9b4');for(let i=0;i<6;i++){p(23-i*3,10+i*5,10+i*6,5,outline);p(25-i*3,13+i*5,6+i*6,4,white)}p(21,34,14,14,'#1f4538');p(24,37,8,11,'#426856');p(14,42,4,4,'#f1e0c0');break;
+ case'bento':frame(5,16,46,31,'#c99b68');p(9,20,38,23,'#f9eee0');p(11,22,17,18,'#f8e2b0');p(29,22,15,7,green);p(29,31,15,9,red);p(18,23,3,3,outline);p(35,22,5,4,'#b6d678');p(8,13,40,5,'#859e91');break;
+ case'sandwich':p(5,39,47,7,'#a7c2b3');p(11,13,34,4,gold);for(let j=0;j<4;j++){p(11+j*6,17+j*5,34-j*5,4,white);p(15+j*5,20+j*5,28-j*4,3,green)}p(14,37,30,5,'#e3a967');break;
+ case'pasta':frame(6,17,44,29,'#cbb38f');p(10,20,36,23,'#f4e7c2');for(let i=0;i<5;i++){p(14+i*6,26+(i%2)*4,13,3,'#e9b262')}p(14,23,8,6,red);p(32,25,7,5,red);p(8,13,40,6,'#ccd7ce');break;
+ case'ramen':p(10,11,36,5,'#d0d9cf');p(11,16,34,33,outline);p(14,18,28,26,'#d2a57a');p(14,25,28,6,white);p(17,32,22,4,red);p(21,12,14,4,dk);p(17,44,23,4,'#936b54');break;
+ case'chocolate':frame(9,12,38,36,'#ab6755');p(13,16,30,28,'#503b33');p(16,19,11,10,'#bc8d70');p(29,19,11,10,'#cfa180');p(16,31,11,10,'#ab765d');p(29,31,11,10,'#b88361');p(7,10,42,5,'#ee7e70');break;
+ case'cookies':p(11,6,34,7,'#ebaf72');frame(10,13,36,36,'#e5bb7e');p(14,20,28,23,'#f5e7ca');for(const [x,y]of[[23,25],[34,34],[24,39]]){p(x-6,y-6,13,13,'#e8bb79');p(x-1,y-2,3,3,'#946f4b');p(x+3,y+1,2,2,'#946f4b')}p(10,13,36,5,'#ce8669');break;
+ case'pudding':p(9,14,38,6,outline);p(13,20,30,30,'#e1bd71');p(11,20,34,9,'#b97b58');p(16,29,24,16,'#f3d992');p(13,45,30,5,'#d3af80');p(14,11,28,4,'#d9d5b9');break;
+ case'pancake':p(8,42,40,7,'#9cb1a9');for(let i=0;i<3;i++){p(11+i,19+i*8,34-i*2,7,'#e9bd77');p(12+i,24+i*8,32-i*2,3,'#bb824f')}p(23,14,11,6,'#f9df92');p(28,18,6,11,'#ab6040');break;
+ case'juice':p(14,11,29,38,'#f0f2dd');p(16,13,25,34,'#85b59c');p(16,15,25,8,'#fbefd2');p(22,26,14,15,'#dfae62');p(28,7,4,15,'#d87b65');p(32,8,7,3,'#d87b65');p(15,46,27,3,outline);break;
+ case'coffee':p(13,12,30,7,'#322f2a');p(15,18,26,29,'#aa6752');p(18,21,20,23,'#db9d73');p(21,24,14,13,'#f2debd');p(23,27,10,8,'#7c573f');p(10,16,36,4,'#ede0c6');p(18,47,22,3,outline);break;
+ }
+}
+function pricing(){const step=CFG.prices[state.difficulty];let prices={};for(const prod of PRODUCTS){let sample=rand(prod.min,prod.max);prices[prod.id]=Math.round(sample/step)*step}return prices}
+function createItemList(){const n=rand(2,4);let set=[];while(set.length<n){const prod=pick(PRODUCTS);if(!prod.repeat&&set.includes(prod.id))continue;set.push(prod.id)}return set.map((id,i)=>({id,index:i,scanned:false,placed:false}))}
+function cashBreakdown(amount){let remaining=Math.round(amount),result=[];for(const denom of [...DENOMS].reverse()){let count=Math.floor(remaining/denom);if(count){result.push({value:denom,count});remaining-=count*denom}}return result}
+function generatePayment(total){const options=[total,Math.ceil(total/1000)*1000,Math.ceil(total/500)*500,Math.ceil(total/100)*100,Math.ceil(total/10)*10,total+100,total+500,5000,10000];let candidates=options.filter(a=>a>=total&&a<=10000).filter((a,i,arr)=>arr.indexOf(a)===i);let exactProbability=state.difficulty==='easy'?.19:.11;let choice;
+ if(Math.random()<exactProbability)choice=total;else {let preferred=candidates.filter(v=>v>total);let weights=preferred.map(v=>{const change=v-total;let w=change<=100?3:change<=500?5:change<=1500?4:change<=4000?1.8:.6;if(state.difficulty==='hard'&&change>0&&change<15)w*=.7;return w});let r=Math.random()*weights.reduce((a,b)=>a+b,0);choice=preferred[preferred.length-1]||total;for(let i=0;i<preferred.length;i++){r-=weights[i];if(r<=0){choice=preferred[i];break}}}
+ return {paid:choice,breakdown:cashBreakdown(choice)}
+}
+function buildCustomer(){const items=createItemList();let total=items.reduce((a,item)=>a+state.prices[item.id],0);let payment=generatePayment(total);return {items,total,paid:payment.paid,cash:payment.breakdown,variant:rand(0,7)}}
+function setScreen(id){$$('.screen').forEach(e=>e.classList.toggle('active',e.id===id))}
+function chooseDifficulty(diff){if(!DIFF_NAMES[diff])return;state.difficulty=diff;saved.difficulty=diff;saveStore();$$('.diff').forEach(el=>el.classList.toggle('sel',el.dataset.diff===diff))}
+function start(){audioReady();tone('start');ambient(true);state.active=true;state.time=CFG.checkoutSeconds;state.prices=pricing();state.served=0;state.service=0;state.short=0;state.customerNo=0;state.lastRound=null;state.training=!saved.seenTutorial;state.justFinishedTraining=false;state.warned=false;state.lastFrame=performance.now();$('#clockLabel').textContent=state.training?'TRAINING / 練習中':'CHECKOUT TIME';$('#hudDiff').textContent='ASOBEAT / '+DIFF_NAMES[state.difficulty];$('#timer').textContent='30.00';$('#timer').classList.remove('warn');setScreen('gameScreen');nextCustomer()}
+function nextCustomer(){state.customerNo++;state.justFinishedTraining=false;state.current=buildCustomer();state.customerVariant=state.current.variant;state.scanned=state.current.items.map(()=>false);state.shownItems=0;state.shownCash=0;state.scanTotal=0;state.lastScan=null;state.given={};state.expression='neutral';state.speech='「お願いします！」';setPhase('arrival')}
+function setPhase(p){state.phase=p;state.phaseStart=performance.now();state.drag=null;clearGhost();state.expression=p==='reaction'?state.expression:'neutral';const label={arrival:'お客さまが到着',placing:'商品を出しています',payment:'お支払い準備中',checkout:'会計中 / タイマー進行',reaction:'お会計完了',exit:'お客さまが退店'};$('#phaseLabel').textContent=label[p]||'';$('#customerLabel').textContent=state.training?'はじめての練習':`お客さま ${String(state.customerNo).padStart(2,'0')}`;
+ if(p==='arrival'){state.speech='「お願いします！」'}
+ if(p==='placing'){state.speech='「これください！」';showItems(1)}
+ if(p==='payment'){state.speech='「お金、置きますね」';showMoney(1)}
+ if(p==='checkout'){state.speech='「お釣り、お願いします」'}
+ if(p==='exit'){state.speech='「失礼します〜」'}
+ $('#speech').textContent=state.speech;updateUI()}
+function showItems(target){if(!state.current)return;target=clamp(target,0,state.current.items.length);if(target===state.shownItems)return;state.shownItems=target;state.current.items.forEach((it,i)=>it.placed=i<target);tone('place');renderItems();updateUI()}
+function showMoney(target){if(!state.current)return;target=clamp(target,0,state.current.cash.length);if(target===state.shownCash)return;state.shownCash=target;renderMoney()}
+function renderItems(){const arr=state.current?.items||[];let html='';for(let i=0;i<4;i++){const it=arr[i];if(!it||!it.placed){html+=`<div class="item-slot empty" aria-hidden="true"></div>`;continue}const info=PRODUCTS.find(p=>p.id===it.id),price=state.prices[it.id];html+=`<div class="item-slot ${it.scanned?'scanned':''}" data-item="${i}" aria-label="${info.name} ${it.scanned?fmt(price):'未スキャン'}"><canvas class="pixel" width="56" height="56" data-art="${it.id}" aria-hidden="true"></canvas><span class="item-name">${info.name}</span><span class="item-cost">${it.scanned?fmt(price):'— — —'}</span>${it.scanned?'<span class="check">✓</span>':''}</div>`}
+ $('#products').innerHTML=html;$$('#products canvas[data-art]').forEach(c=>drawProduct(c,c.dataset.art))}
+function renderMoney(){const have=state.current?state.current.cash.slice(0,state.shownCash):[];$('#paymentMoney').innerHTML=have.length?have.map(s=>`<div class="money-stack">${moneyFace(s.value)}<span class="count">×${s.count}</span></div>`).join(''):'<span class="empty-label">お支払い待ち</span>';const own=Object.entries(state.given).map(([value,count])=>({value:Number(value),count})).filter(d=>d.count>0).sort((a,b)=>b.value-a.value);$('#returnMoney').innerHTML=own.length?own.map(s=>`<button class="money-stack" type="button" data-value="${s.value}" data-source="return" aria-label="${s.value}円を一枚戻す">${moneyFace(s.value)}<span class="count">×${s.count}</span></button>`).join(''):'<span class="empty-label">ここへお金を置く</span>';$('#returnTotal').textContent=fmt(givenSum())}
+function givenSum(){return DENOMS.reduce((a,d)=>a+(state.given[d]||0)*d,0)}
+function updateUI(){const ready=state.phase==='placing'||state.phase==='payment'||state.phase==='checkout';$('#scannerDock').classList.toggle('available',ready);const n=state.current?.items.length||0;const scanned=state.current?.items.filter(i=>i.scanned).length||0;$('#scanCount').textContent=`SCAN ${scanned} / ${n}`;$('#total').textContent=fmt(state.scanTotal);$('#total').classList.toggle('small',state.scanTotal>9999);$('#lastScan').textContent=state.lastScan||'読み取り待ち';$('#productsHint').textContent=scanned===n&&n?'スキャン完了 ✓':`${scanned} / ${n} 点`;$('#payBtn').disabled=state.phase!=='checkout'||scanned!==n;
+ if(state.phase==='arrival')state.hint=state.training?'練習中は時間が減りません':'お客さまをお待ちください';
+ else if(state.phase==='placing'||state.phase==='payment')state.hint=scanned!==n?(state.training?'① 長押しで商品をスキャン':'スキャナーを長押しして商品へ'):(state.training?'② お客さまのお金を確認':'お支払いを待っています');
+ else if(state.phase==='checkout')state.hint=scanned!==n?'商品を全部スキャンしよう':state.training?(givenSum()?'④ お釣りです！を押そう':'③ お釣りを右トレーへ'):'お金を右トレーへドラッグ';
+ else if(state.phase==='reaction'||state.phase==='exit')state.hint=state.justFinishedTraining?'練習終了！次から30秒勝負':'お会計お疲れさまです！';
+ $('#hint').textContent=state.hint}
+function scanItem(i){if(!state.current||!['placing','payment','checkout'].includes(state.phase))return false;const item=state.current.items[i];if(!item||!item.placed||item.scanned)return false;item.scanned=true;state.scanTotal+=state.prices[item.id];const info=PRODUCTS.find(p=>p.id===item.id);state.lastScan=`${info.name} ${fmt(state.prices[item.id])}`;tone('scan');renderItems();const el=$(`[data-item="${i}"]`);if(el)el.classList.add('just-scanned');updateUI();return true}
+function addGiven(v){if(state.phase!=='checkout'||!DENOMS.includes(v))return false;state.given[v]=(state.given[v]||0)+1;renderMoney();updateUI();tone(v>=1000?'note':'coin');return true}
+function removeGiven(v){if(state.phase!=='checkout'||!state.given[v])return false;state.given[v]--;if(!state.given[v])delete state.given[v];renderMoney();updateUI();tone('tap');return true}
+function finishCheckout(){if(state.phase!=='checkout'||!state.current?.items.every(i=>i.scanned))return;if(state.time<=0){finishGame();return}const target=state.current.paid-state.current.total,off=givenSum()-target;if(!state.training){state.served++;if(off>0)state.service+=off;if(off<0)state.short-=off;}state.lastRound={target,off,returned:givenSum(),total:state.current.total,paid:state.current.paid};state.expression=off===0?'happy':'confused';state.speech='「'+pick(off===0?CORRECT_LINES:WRONG_LINES)+'」';if(state.training){saved.seenTutorial=true;saveStore();state.training=false;state.justFinishedTraining=true;$('#clockLabel').textContent='CHECKOUT TIME';}tone(off===0?'ok':'wrong');setPhase('reaction');state.expression=off===0?'happy':'confused';$('#speech').textContent=state.speech}
+function getTitle(){const {served,service,short}=state;if(served===0)return '研修初日で終了';if(service===0&&short===0){if(served>=5)return '伝説のレジ職人';if(served>=3)return 'パーフェクト店員';return '慎重すぎる優等生'}if(service>0&&short>0)return '収支の魔術師';if(service>0)return service>=1000?'赤字覚悟の神店員':'気前のいい店員';return short>=1000?'お釣りの大泥棒':'お釣りの行方不明事件'}
+function scoreForResult(){return state.served*10000-Math.min(9999,state.service+state.short)}
+function finishGame(){if(state.phase==='result'||!state.active)return;state.active=false;state.phase='result';ambient(false);tone('end');state.time=0;$('#timer').textContent='00.00';const title=getTitle();state.finalTitle=title;let old=saved.records[state.difficulty]||{maxCustomers:0,bestScore:-Infinity};let score=scoreForResult(),improved=score>old.bestScore;let next={maxCustomers:Math.max(old.maxCustomers||0,state.served),bestScore:Math.max(old.bestScore??-Infinity,score)};saved.records[state.difficulty]=next;saveStore();$('#resultDiff').textContent=`難易度：${DIFF_NAMES[state.difficulty]}`;$('#receiptNo').textContent='#'+String(rand(1,999)).padStart(3,'0');$('#resultCustomers').textContent=state.served+' 人';$('#resultService').textContent=fmt(state.service);$('#resultShort').textContent=fmt(state.short);$('#resultTitle').textContent=title;$('#recordMsg').textContent=(improved?'NEW BEST!　':'')+'最多対応 '+next.maxCustomers+' 人';setScreen('resultScreen')}
+function share(){const url=location.protocol==='https:'?location.origin+location.pathname:'';const text=`『お釣りいくら？』\n難易度：${DIFF_NAMES[state.difficulty]}\n対応人数：${state.served}人\nサービス：${state.service}円\n横領：${state.short}円\n称号：${state.finalTitle}\n\n30秒のコンビニレジ、あなたは何人さばける？\n#ASOBEAT #ゲーム開発 #gamedev${url?'\n'+url:''}`;const href='https://twitter.com/intent/tweet?text='+encodeURIComponent(text);window.open(href,'_blank','noopener,noreferrer');}
+function frame(t){let dt=state.lastFrame?Math.max(0,t-state.lastFrame):0;state.lastFrame=t;
+ if(state.active&&!document.hidden){let elapsed=t-state.phaseStart;switch(state.phase){
+ case 'arrival':if(elapsed>=CFG.arrivalMs)setPhase('placing');break;
+ case 'placing':{const n=state.current.items.length;showItems(Math.min(n,Math.floor(elapsed/CFG.placementMs*n)+1));if(elapsed>=CFG.placementMs){showItems(n);setPhase('payment')}break}
+ case 'payment':{const n=state.current.cash.length;showMoney(Math.min(n,Math.floor(elapsed/CFG.paymentMs*n)+1));if(elapsed>=CFG.paymentMs){showMoney(n);setPhase('checkout')}break}
+ case 'checkout':if(!state.training)state.time=Math.max(0,state.time-dt/1000);$('#timer').textContent=state.time.toFixed(2);$('#timer').classList.toggle('warn',state.time<=5);if(state.time<=5&&!state.warned){tone('tick');state.warned=true}if(state.time===0)finishGame();break;
+ case 'reaction':if(elapsed>=CFG.reactionMs)setPhase('exit');break;
+ case 'exit':if(elapsed>=CFG.exitMs){if(state.time<=0)finishGame();else nextCustomer()}break;
+ }}
+ drawScene(t);requestAnimationFrame(frame)}
+// --- Pixel illustration: deliberate block-based shapes, fixed palette, no stock/AI images. ---
+const PERSONS=[
+{hair:'#463b35',shirt:'#e1af7e',pants:'#344f58',skin:'#e9bb8d',accent:'#b56e56',style:0},
+{hair:'#513a46',shirt:'#7eaf9b',pants:'#4b5765',skin:'#f0c09a',accent:'#d3ac76',style:1},
+{hair:'#4a352c',shirt:'#d9c0a0',pants:'#525866',skin:'#dca878',accent:'#344b42',style:2},
+{hair:'#9d6c49',shirt:'#8db4c8',pants:'#354c59',skin:'#f0bf96',accent:'#d4a252',style:3},
+{hair:'#2c383d',shirt:'#bfa5c5',pants:'#4c4b67',skin:'#c8926c',accent:'#9b6261',style:4},
+{hair:'#53463a',shirt:'#b7c881',pants:'#52674e',skin:'#d7a57f',accent:'#506a57',style:5},
+{hair:'#6e4c3a',shirt:'#dfa493',pants:'#5a5f69',skin:'#e8ba94',accent:'#855844',style:6},
+{hair:'#323e41',shirt:'#c9b5a0',pants:'#395566',skin:'#cda284',accent:'#af8966',style:7}];
+function rect(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(Math.floor(x),Math.floor(y),Math.ceil(w),Math.ceil(h))}
+function drawPerson(c,x,y,s,variant,expression='neutral',walk=0,reach=false){const ch=PERSONS[variant%PERSONS.length];const P=(px,py,w,h,col)=>rect(c,x+px*s,y+py*s,w*s,h*s,col),skin=ch.skin;
+ P(7,49,30,3,'#546d5c62');let legOffset=Math.abs(walk)>0?.7*Math.sin(walk*14):0;
+ P(11,40,9,10+legOffset,ch.pants);P(25,40,9,10-legOffset,ch.pants);P(9,48,11,4,'#293e39');P(25,48,12,4,'#293e39');
+ P(8,24,30,20,ch.shirt);P(3,26,7,17,ch.shirt);P(38,26,7,17,ch.shirt);P(3,41,7,4,skin);P(38,41,7,4,skin);if(reach){P(38,28,12,6,ch.shirt);P(49,28,11,6,skin);P(56,30,5,4,'#f0c59d')}
+ P(21,24,5,7,'#f2efe3');P(10,29,27,3,ch.accent);P(20,25,3,17,'#30463e33');
+ P(12,9,25,18,skin);P(10,11,4,12,skin);P(36,11,3,12,skin);
+ P(11,5,28,9,ch.hair);P(8,8,9,13,ch.hair);P(35,7,6,12,ch.hair);P(16,3,17,5,ch.hair);P(27,6,8,3,'#ffffff17');
+ if(ch.style===3){P(7,5,35,5,'#52707d');P(14,2,22,5,'#597989')}
+ if(ch.style===4){P(13,17,11,3,'#394f4b');P(27,17,10,3,'#394f4b');P(22,18,5,2,'#394f4b')}
+ else {P(17,17,3,3,'#35443e');P(30,17,3,3,'#35443e')}
+ if(ch.style===1)P(35,17,9,22,ch.hair);
+ if(ch.style===6){P(17,19,3,2,'#e66b61');P(30,19,3,2,'#e66b61')}
+ if(expression==='happy'){P(23,23,6,2,'#835645');P(21,22,2,2,'#835645');P(29,22,2,2,'#835645')}
+ else if(expression==='confused'){P(21,24,7,2,'#815b4c');P(16,15,8,2,'#765446');P(29,16,5,2,'#765446')}
+ else P(23,24,6,2,'#9a6c55');
+ if(ch.style===2)P(10,9,6,11,ch.hair);
+ if(ch.style===5)P(19,28,8,9,'#e5d6a4');
+}
+function drawStore(c,w,h,title=false,time=0){const sx=w/390,sy=h/(title?250:175);c.save();c.scale(sx,sy);const H=title?250:175;
+ rect(c,0,0,390,H,'#d4dfcf');rect(c,0,0,390,29,'#91b7a3');rect(c,0,26,390,5,'#5c8373');rect(c,0,32,390,81,'#c6d9c3');
+ // Deep shelving, distinct stocked packages.
+ for(let shelf=0;shelf<2;shelf++){const yy=50+shelf*35;rect(c,0,yy,128,28,'#718e78');rect(c,0,yy+26,130,5,'#516b5d');for(let j=0;j<8;j++){const x=5+j*15,hh=15+(j%3)*3;rect(c,x,yy+25-hh,10,hh,['#ddc49d','#c98a80','#95bba2','#c5ae8e'][j%4]);rect(c,x+2,yy+25-hh,6,3,'#f6e7d0');rect(c,x+2,yy+25-hh+7,5,2,'#fff6e2')}}
+ rect(c,142,41,68,49,'#eff0db');rect(c,146,45,60,40,'#9fbeaa');rect(c,151,50,50,28,'#e3ebdb');rect(c,154,53,17,23,'#afc8b5');rect(c,174,53,23,23,'#8aafa0');
+ // Store signs, front register furniture, tiled linoleum.
+ rect(c,221,35,137,51,'#97b5a0');rect(c,226,41,126,37,'#c6dac3');rect(c,242,44,89,7,'#34634c');c.fillStyle='#f7e9c2';c.font='bold 10px monospace';c.fillText('M I N I  M A R T',244,50);
+ rect(c,0,115,390,H-115,'#afc5b1');for(let j=0;j<17;j++){rect(c,j*27+(j%2)*4,144,1,H-145,'#8ea99956')}
+ rect(c,0,H-17,390,17,'#715f4e');rect(c,0,H-21,390,5,'#bdab91');rect(c,258,100,105,36,'#4b7061');rect(c,260,104,99,31,'#c7c6a9');rect(c,278,106,61,18,'#173c30');rect(c,284,111,48,7,'#8fd4af');rect(c,259,129,105,5,'#294c40');
+ // overhead lamps in the fixed store background
+ for(let i=0;i<3;i++){const x=43+i*151;rect(c,x,0,2,14,'#557e69');rect(c,x-9,14,21,5,'#527363');rect(c,x-13,19,29,3,'#e9daae')}
+ c.restore()}
+function drawScene(t){const canvas=$('#sceneCanvas');if(!canvas)return;const c=canvas.getContext('2d'),W=390,H=175;c.imageSmoothingEnabled=false;drawStore(c,W,H,false,t);
+ // Queue represents other customers in the convenience store.
+ const step=(t/1000);for(let i=0;i<3;i++)drawPerson(c,12+i*49,61+(i%2)*10,.98,(state.customerNo+i+3)%8,'neutral',0);
+ if(state.phase==='title'||state.phase==='result')return;
+ let x=137,elapsed=t-state.phaseStart,walk=0;if(state.phase==='arrival'){const p=clamp(elapsed/CFG.arrivalMs,0,1);x=398-(398-137)*(1-Math.pow(1-p,2.6));walk=step*10}else if(state.phase==='exit'){const p=clamp(elapsed/CFG.exitMs,0,1);x=137+290*p*p;walk=step*10}
+ const reach=((state.phase==='placing'&&Math.sin(elapsed/140)>0)||(state.phase==='payment'&&Math.sin(elapsed/260)>0));drawPerson(c,Math.round(x),45,2.1,state.customerVariant,state.expression,walk,reach);
+ // Lightweight register overlay, a subtle non-interactive store counter at edge.
+ rect(c,0,163,390,12,'#597763');rect(c,0,164,390,2,'#c2c3a6')
+}
+function drawTitle(){const canvas=$('#titleCanvas'),c=canvas.getContext('2d');c.imageSmoothingEnabled=false;drawStore(c,390,250,true);for(let i=0;i<3;i++)drawPerson(c,2+i*55,112,1.42,(i+4)%8,'neutral');drawPerson(c,217,86,2.8,0,'happy');rect(c,0,228,390,22,'#537763')}
+function clearGhost(){const layer=$('#dragLayer');if(layer)layer.innerHTML='';$('#rightTray')?.classList.remove('drop-target');$('#cashDrawer')?.classList.remove('drop-target')}
+function pointInside(el,x,y,pad=0){if(!el)return false;const r=el.getBoundingClientRect();return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad}
+function ghostMoney(value){const el=document.createElement('div');el.className='drag-ghost money';el.innerHTML=moneyFace(value);$('#dragLayer').appendChild(el);return el}
+function ghostScanner(){const el=document.createElement('div');el.className='drag-ghost scanner';el.innerHTML='<canvas width="56" height="56"></canvas>';$('#dragLayer').appendChild(el);drawScanner(el.querySelector('canvas'));return el}
+function beginDrag(kind,source,denom,e,element){if(e.button!==undefined&&e.button!==0)return;if(state.phase==='result'||!state.active)return;if(kind==='scanner'&&!['placing','payment','checkout'].includes(state.phase))return;if(kind==='money'&&state.phase!=='checkout')return;
+ e.preventDefault();audioReady();const drag={kind,source,denom,element,id:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,moved:false,ghost:kind==='scanner'?ghostScanner():null};state.drag=drag;try{element.setPointerCapture(e.pointerId)}catch(_){}if(kind==='scanner'){tone('tap');moveGhost(drag);checkScannerHit(e.clientX,e.clientY)} }
+function moveGhost(d){if(!d.ghost)return;if(d.kind==='scanner'){d.ghost.style.left=(d.x-31)+'px';d.ghost.style.top=(d.y-58)+'px'}else{d.ghost.style.left=(d.x-24)+'px';d.ghost.style.top=(d.y-55)+'px'}}
+function checkScannerHit(x,y){if(!state.current)return;const tipX=x,tipY=y-30;let found=-1;for(const el of $$('#products .item-slot[data-item]')){const i=Number(el.dataset.item);if(state.current.items[i]?.scanned)continue;if(pointInside(el,tipX,tipY,7)){found=i;break}}if(found>=0)scanItem(found)}
+function dragMove(e){let d=state.drag;if(!d||e.pointerId!==d.id)return;e.preventDefault();d.x=e.clientX;d.y=e.clientY;if(Math.hypot(d.x-d.startX,d.y-d.startY)>7)d.moved=true;
+ if(d.kind==='money'&&d.moved&&!d.ghost)d.ghost=ghostMoney(d.denom);moveGhost(d);
+ if(d.kind==='money'){const target=d.source==='bank'?$('#rightTray'):$('#cashDrawer');const hit=pointInside(target,d.x,d.y,9);target.classList.toggle('drop-target',hit)}
+ if(d.kind==='scanner')checkScannerHit(d.x,d.y)}
+function dragFinish(e,cancel=false){let d=state.drag;if(!d||e.pointerId!==d.id)return;state.drag=null;if(!cancel&&d.kind==='money'){
+ if(d.source==='bank'&&(pointInside($('#rightTray'),e.clientX,e.clientY,10)||!d.moved))addGiven(d.denom);
+ if(d.source==='return'&&(pointInside($('#cashDrawer'),e.clientX,e.clientY,10)||!d.moved))removeGiven(d.denom);
+ }
+ try{d.element.releasePointerCapture(d.id)}catch(_){}clearGhost()}
+function handleKeyScanner(e){if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();let idx=state.current?.items.findIndex(i=>i.placed&&!i.scanned);if(idx>=0)scanItem(idx)}
+function init(){drawTitle();drawScanner($('#scannerIcon'));createDrawer();chooseDifficulty(saved.difficulty);$('#difficultyPicker').addEventListener('click',e=>{const btn=e.target.closest('button[data-diff]');if(btn)chooseDifficulty(btn.dataset.diff)});
+ $('#startBtn').addEventListener('click',start);$('#payBtn').addEventListener('click',finishCheckout);$('#retryBtn').addEventListener('click',start);$('#backBtn').addEventListener('click',()=>{ambient(false);state.active=false;state.phase='title';drawTitle();setScreen('titleScreen')});$('#shareBtn').addEventListener('click',share);
+ $('#soundBtn').addEventListener('click',()=>{saved.sound=!saved.sound;saveStore();$('#soundBtn').textContent=saved.sound?'♪':'×';if(saved.sound){audioReady();ambient(state.active)}else ambient(false)});$('#soundBtn').textContent=saved.sound?'♪':'×';
+ $('#scannerDock').addEventListener('pointerdown',e=>beginDrag('scanner','dock',0,e,e.currentTarget));$('#scannerDock').addEventListener('keydown',handleKeyScanner);
+ $('#cashDrawer').addEventListener('pointerdown',e=>{const el=e.target.closest('.denom[data-value]');if(el)beginDrag('money','bank',Number(el.dataset.value),e,el)});
+ $('#returnMoney').addEventListener('pointerdown',e=>{const el=e.target.closest('.money-stack[data-value]');if(el)beginDrag('money','return',Number(el.dataset.value),e,el)});
+ // Keyboard-only fallback. Touch-generated click events can have detail=0 on mobile,
+ // so never process click and pointerup for the same physical tap.
+ $('#cashDrawer').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const el=e.target.closest('.denom[data-value]');if(el){e.preventDefault();addGiven(Number(el.dataset.value))}});
+ $('#returnMoney').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const el=e.target.closest('.money-stack[data-value]');if(el){e.preventDefault();removeGiven(Number(el.dataset.value))}});
+ document.addEventListener('pointermove',dragMove,{passive:false});document.addEventListener('pointerup',e=>dragFinish(e),{passive:false});document.addEventListener('pointercancel',e=>dragFinish(e,true),{passive:false});
+ document.addEventListener('visibilitychange',()=>{const now=performance.now();if(document.hidden){state.hiddenAt=now}else{if(state.hiddenAt)state.phaseStart+=now-state.hiddenAt;state.hiddenAt=0}state.lastFrame=now});window.addEventListener('blur',()=>{if(state.drag){state.drag=null;clearGhost()} });
+ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.drag){state.drag=null;clearGhost()}});
+ state.lastFrame=performance.now();requestAnimationFrame(frame)
+}
+init();
+</script></body></html>
